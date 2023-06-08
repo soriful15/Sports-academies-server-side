@@ -49,15 +49,34 @@ async function run() {
     await client.connect();
 
     const usersCollection = client.db('sportAcademies').collection('users')
+    const classesCollection = client.db('sportAcademies').collection('classes')
 
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      if (user?.role !== 'admin') {
+        return res.status(403).send({ error: true, message: 'forbidden message' })
+      }
+      next()
+    }
 
+    const verifyInstructors = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      if (user?.role !== 'instructors') {
+        return res.status(403).send({ error: true, message: 'forbidden message' })
+      }
+      next()
+    }
 
 
 
     app.post('/users', async (req, res) => {
       const user = req.body
       console.log(user)
-      const query = { instructor_email: user.email }
+      const query = { email: user.email }
       const existingUser = await usersCollection.findOne(query)
       console.log('existing user', existingUser)
       if (existingUser) {
@@ -67,6 +86,95 @@ async function run() {
       const result = await usersCollection.insertOne(user)
       res.send(result)
     })
+
+    app.get('/users', async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result)
+    })
+
+
+    //   app.get('/users',  async (req, res) => {
+    //     const email = req.query.email
+    //     console.log(email)
+    //     if (!email) {
+    //         res.send([])
+    //     }
+    //     const decodedEmail = req.decoded.email;
+    //     if (email !== decodedEmail) {
+    //         return res.status(401).send({ error: true, message: 'forbidden access' })
+    //     }
+    //     const query = { email: email }
+    //     const result = await usersCollection.find(query).toArray()
+    //     res.send(result)
+    // })
+
+
+
+
+
+    app.patch('/users/admin/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          role: 'admin'
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
+    app.get('/users/admin/:email', async (req, res) => {
+      const email = req.params.email
+
+
+      if (req.decoded.email !== email) {
+        res.send({ admin: false })
+      }
+
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      const result = { admin: user?.role === 'admin' }
+      res.send(result)
+
+    })
+
+    app.patch('/users/instructors/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          role: 'instructors'
+        }
+      }
+      const result = await usersCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+
+    app.get('/users/instructors/:email', async (req, res) => {
+      const email = req.params.email
+
+
+      if (req.decoded.email !== email) {
+        res.send({ admin: false })
+      }
+
+      const query = { email: email }
+      const user = await usersCollection.findOne(query)
+      const result = { admin: user?.role === 'instructors' }
+      res.send(result)
+
+    })
+
+
+
+    app.post('/classes', async (req, res) => {
+      const classesItem = req.body
+      const result = await classesCollection.insertOne(classesItem)
+      res.send(result)
+    })
+
+
 
     // jwt 
     app.post('/jwt', async (req, res) => {
