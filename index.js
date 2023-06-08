@@ -33,9 +33,20 @@ async function run() {
     const usersCollection = client.db('sportAcademies').collection('users')
 
 
+
+
+
+  
     app.post('/users', async (req, res) => {
       const user = req.body
       console.log(user)
+      const query = { instructor_email: user.email }
+      const existingUser = await usersCollection.findOne(query)
+      console.log('existing user', existingUser)
+      if (existingUser) {
+        return res.send({ message: 'user already existingUser' })
+      }
+
       const result = await usersCollection.insertOne(user)
       res.send(result)
     })
