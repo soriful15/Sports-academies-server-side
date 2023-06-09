@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const port = process.env.PORT || 4000;
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 // middleware
 require('dotenv').config()
 app.use(cors());
@@ -10,6 +10,8 @@ app.use(express.json());
 
 // jwt
 const jwt = require('jsonwebtoken');
+
+
 
 const verifyJwt = (req, res, next) => {
   const authorization = req.headers.authorization;
@@ -32,7 +34,7 @@ const verifyJwt = (req, res, next) => {
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.SECRET_KEY}@cluster0.uwuwq9x.mongodb.net/?retryWrites=true&w=majority`;
-console.log(uri)
+// console.log(uri)
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -51,7 +53,7 @@ async function run() {
     const usersCollection = client.db('sportAcademies').collection('users')
     const classesCollection = client.db('sportAcademies').collection('classes')
     const cartsCollection = client.db('sportAcademies').collection("carts")
-   
+
 
 
 
@@ -91,7 +93,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users', async (req, res) => {
+    app.get('/users', verifyJwt, verifyAdmin, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result)
     })
@@ -128,7 +130,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users/admin/:email', async (req, res) => {
+    app.get('/users/admin/:email', verifyJwt, async (req, res) => {
       const email = req.params.email
 
 
@@ -155,7 +157,7 @@ async function run() {
       res.send(result)
     })
 
-    app.get('/users/instructors/:email', async (req, res) => {
+    app.get('/users/instructors/:email', verifyJwt, async (req, res) => {
       const email = req.params.email
       if (req.decoded.email !== email) {
         res.send({ admin: false })
@@ -181,7 +183,12 @@ async function run() {
       res.send(result)
     })
 
-
+    app.post('/carts', async (req, res) => {
+      const items = req.body
+      console.log(items)
+      const result = await cartsCollection.insertOne(items)
+      res.send(result)
+    })
 
 
     // jwt 
