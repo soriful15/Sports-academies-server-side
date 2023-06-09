@@ -50,6 +50,10 @@ async function run() {
 
     const usersCollection = client.db('sportAcademies').collection('users')
     const classesCollection = client.db('sportAcademies').collection('classes')
+    const cartsCollection = client.db('sportAcademies').collection("carts")
+   
+
+
 
     const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
@@ -153,8 +157,6 @@ async function run() {
 
     app.get('/users/instructors/:email', async (req, res) => {
       const email = req.params.email
-
-
       if (req.decoded.email !== email) {
         res.send({ admin: false })
       }
@@ -173,6 +175,12 @@ async function run() {
       const result = await classesCollection.insertOne(classesItem)
       res.send(result)
     })
+
+    app.get('/classes', async (req, res) => {
+      const result = await classesCollection.find().toArray();
+      res.send(result)
+    })
+
 
 
 
