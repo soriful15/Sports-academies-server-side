@@ -253,7 +253,28 @@ async function run() {
     // })
 
    
+    app.put('/allClasses/:id', async (req, res) => {
+      const id = req.params.id
+      console.log(id)
+      const updatedClass = req.body
+      console.log(updatedClass)
+      const filter = { _id: new ObjectId(id) }
+      const option = { upsert: true };
+      const updatedDoc = {
+        $set: {
+          classesImg: updatedClass.classesImg,
+          classesName: updatedClass.classesName,
+          instructor_name: updatedClass.instructor_name,
+          instructor_email: updatedClass.instructor_email,
+          seats: updatedClass.seats,
+          price: updatedClass.price,
+          details: updatedClass.details,
+        }
+      }
+      const result = await mangeCollection.updateOne(filter, updatedDoc, option)
+      res.send(result)
 
+    })
 
 
 
