@@ -51,7 +51,6 @@ async function run() {
     await client.connect();
 
     const usersCollection = client.db('sportAcademies').collection('users')
-    const classesCollection = client.db('sportAcademies').collection('classes')
     const cartsCollection = client.db('sportAcademies').collection("carts")
     const mangeCollection = client.db('sportAcademies').collection("allClasses")
 
@@ -68,15 +67,15 @@ async function run() {
       next()
     }
 
-    const verifyInstructors = async (req, res, next) => {
-      const email = req.decoded.email;
-      const query = { email: email }
-      const user = await usersCollection.findOne(query)
-      if (user?.role !== 'instructors') {
-        return res.status(403).send({ error: true, message: 'forbidden message' })
-      }
-      next()
-    }
+    // const verifyInstructors = async (req, res, next) => {
+    //   const email = req.decoded.email;
+    //   const query = { email: email }
+    //   const user = await usersCollection.findOne(query)
+    //   if (user?.role !== 'instructors') {
+    //     return res.status(403).send({ error: true, message: 'forbidden message' })
+    //   }
+    //   next()
+    // }
 
 
 
@@ -159,6 +158,20 @@ async function run() {
       res.send(result)
     })
 
+
+
+    app.get('/instructorClasses', async (req, res) => {
+      const query={role: 'instructors'}
+      const result = await usersCollection.find(query).limit(6).toArray();
+      res.send(result)
+    })
+
+
+
+
+
+
+
     app.get('/users/instructors/:email', verifyJwt, async (req, res) => {
       const email = req.params.email
       if (req.decoded.email !== email) {
@@ -171,23 +184,6 @@ async function run() {
       res.send(result)
 
     })
-
-
-
-    // app.post('/classes', async (req, res) => {
-    //   const classesItem = req.body
-    //   const result = await classesCollection.insertOne(classesItem)
-    //   res.send(result)
-    // })
-
-    // app.get('/classes', async (req, res) => {
-    //   const result = await classesCollection.find().toArray();
-    //   res.send(result)
-    // })
-
-
-
-
     app.post('/allClasses', async (req, res) => {
       const classesItem = req.body
       const result = await mangeCollection.insertOne(classesItem)
@@ -197,6 +193,7 @@ async function run() {
       const result = await mangeCollection.find().toArray();
       res.send(result)
     })
+    
     app.put('/updatedStatusApproved/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -220,6 +217,7 @@ async function run() {
       const result = await mangeCollection.updateOne(filter, updateDoc)
       res.send(result)
     })
+
     app.patch('/updatedStatusFeedBack/:id', async (req, res) => {
       const id = req.params.id;
       const {feedBack} = req.body;
@@ -234,24 +232,27 @@ async function run() {
     })
 
 
-    app.get('/classByInstructorEmail', async (req, res) => {
-      const email = req.query.email
-      const query = { instructorEmail: email }
-      try {
-        const result = await mangeCollection.find(query).toArray()
-        res.send(result)
-      }
-      catch(error){
-        console.error(error)
-        return res.status(500).json({error:'As error accurrod while fetching classes by Instructor email'})
-      }
-    })
-
     app.get('/approvedClasses', async (req, res) => {
       const query={status: 'approved'}
       const result = await mangeCollection.find(query).toArray();
       res.send(result)
     })
+
+
+    // app.get('/classByInstructorEmail', async (req, res) => {
+    //   const email = req.query.email
+    //   const query = { instructor_email: email }
+    //   try {
+    //     const result = await mangeCollection.find(query).toArray()
+    //     res.send(result)
+    //   }
+    //   catch(error){
+    //     console.error(error)
+    //     return res.status(500).json({error:'As error accord while fetching classes by Instructor email'})
+    //   }
+    // })
+
+   
 
 
 
