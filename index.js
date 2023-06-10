@@ -53,6 +53,7 @@ async function run() {
     const usersCollection = client.db('sportAcademies').collection('users')
     const classesCollection = client.db('sportAcademies').collection('classes')
     const cartsCollection = client.db('sportAcademies').collection("carts")
+    const mangeCollection = client.db('sportAcademies').collection("allClasses")
 
 
 
@@ -97,6 +98,7 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result)
     })
+
 
 
     //   app.get('/users',  async (req, res) => {
@@ -160,35 +162,132 @@ async function run() {
     app.get('/users/instructors/:email', verifyJwt, async (req, res) => {
       const email = req.params.email
       if (req.decoded.email !== email) {
-        res.send({ admin: false })
+        res.send({ instructors: false })
       }
 
       const query = { email: email }
       const user = await usersCollection.findOne(query)
-      const result = { admin: user?.role === 'instructors' }
+      const result = { instructors: user?.role === 'instructors' }
       res.send(result)
 
     })
 
 
 
-    app.post('/classes', async (req, res) => {
+    // app.post('/classes', async (req, res) => {
+    //   const classesItem = req.body
+    //   const result = await classesCollection.insertOne(classesItem)
+    //   res.send(result)
+    // })
+
+    // app.get('/classes', async (req, res) => {
+    //   const result = await classesCollection.find().toArray();
+    //   res.send(result)
+    // })
+
+
+
+
+    app.post('/allClasses', async (req, res) => {
       const classesItem = req.body
-      const result = await classesCollection.insertOne(classesItem)
+      const result = await mangeCollection.insertOne(classesItem)
+      res.send(result)
+    })
+    app.get('/allClasses', async (req, res) => {
+      const result = await mangeCollection.find().toArray();
+      res.send(result)
+    })
+    app.put('/updatedStatusApproved/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: 'approved'
+        }
+      }
+      const result = await mangeCollection.updateOne(filter, updateDoc)
       res.send(result)
     })
 
-    app.get('/classes', async (req, res) => {
-      const result = await classesCollection.find().toArray();
+    app.put('/updatedStatusDeny/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          status: 'deny'
+        }
+      }
+      const result = await mangeCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
+    app.patch('/updatedStatusFeedBack/:id', async (req, res) => {
+      const id = req.params.id;
+      const {feedBack} = req.body;
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+          feedBack: feedBack
+        }
+      }
+      const result = await mangeCollection.updateOne(filter, updateDoc)
       res.send(result)
     })
 
-    app.post('/carts', async (req, res) => {
-      const items = req.body
-      console.log(items)
-      const result = await cartsCollection.insertOne(items)
+
+    app.get('/classByInstructorEmail', async (req, res) => {
+      const email = req.query.email
+      const query = { instructorEmail: email }
+      try {
+        const result = await mangeCollection.find(query).toArray()
+        res.send(result)
+      }
+      catch(error){
+        console.error(error)
+        return res.status(500).json({error:'As error accurrod while fetching classes by Instructor email'})
+      }
+    })
+
+    app.get('/approvedClasses', async (req, res) => {
+      const query={status: 'approved'}
+      const result = await mangeCollection.find(query).toArray();
       res.send(result)
     })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // app.post('/carts', async (req, res) => {
+    //   const items = req.body
+    //   console.log(items)
+    //   const result = await cartsCollection.insertOne(items)
+    //   res.send(result)
+    // })
 
 
     // jwt 
