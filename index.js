@@ -161,7 +161,7 @@ async function run() {
 
 
     app.get('/instructorClasses', async (req, res) => {
-      const query={role: 'instructors'}
+      const query = { role: 'instructors' }
       const result = await usersCollection.find(query).limit(6).toArray();
       res.send(result)
     })
@@ -193,7 +193,7 @@ async function run() {
       const result = await mangeCollection.find().toArray();
       res.send(result)
     })
-    
+
     app.put('/updatedStatusApproved/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -220,7 +220,7 @@ async function run() {
 
     app.patch('/updatedStatusFeedBack/:id', async (req, res) => {
       const id = req.params.id;
-      const {feedBack} = req.body;
+      const { feedBack } = req.body;
       const filter = { _id: new ObjectId(id) }
       const updateDoc = {
         $set: {
@@ -234,7 +234,7 @@ async function run() {
 
 
     app.get('/approvedClasses', async (req, res) => {
-      const query={status: 'approved'}
+      const query = { status: 'approved' }
       const result = await mangeCollection.find(query).toArray();
       res.send(result)
     })
@@ -254,11 +254,11 @@ async function run() {
     // })
 
 
-  //  Todo 
+    //  Todo 
     app.put('/allClasses/:id', async (req, res) => {
       const id = req.params.id
       console.log(id)
-      const filter = {_id: new ObjectId(id)}
+      const filter = { _id: new ObjectId(id) }
       const updatedData = req.body
       console.log(updatedData)
       const option = { upsert: true };
@@ -269,7 +269,7 @@ async function run() {
           details: updatedData.details,
         }
       }
-      const result = await mangeCollection .updateOne(filter, updatedDoc,option)
+      const result = await mangeCollection.updateOne(filter, updatedDoc, option)
       res.send(result)
 
     })
@@ -279,6 +279,26 @@ async function run() {
       const result = await cartsCollection.insertOne(items)
       res.send(result)
     })
+
+    app.get('/carts', async (req, res) => {
+      const email = req.query.email
+      if (!email) {
+        res.send([])
+
+      }
+      const query = { email: email }
+      const result = await cartsCollection.find(query).toArray()
+      res.send(result)
+    })
+
+    app.delete('/carts/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await cartsCollection.deleteOne(query)
+      res.send(result)
+    })
+
+
 
 
     // jwt 
