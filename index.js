@@ -232,6 +232,7 @@ async function run() {
     })
 
 
+
     app.get('/approvedClasses', async (req, res) => {
       const query={status: 'approved'}
       const result = await mangeCollection.find(query).toArray();
@@ -252,64 +253,32 @@ async function run() {
     //   }
     // })
 
-   
+
+  //  Todo 
     app.put('/allClasses/:id', async (req, res) => {
       const id = req.params.id
       console.log(id)
-      const updatedClass = req.body
-      console.log(updatedClass)
-      const filter = { _id: new ObjectId(id) }
+      const filter = {_id: new ObjectId(id)}
+      const updatedData = req.body
+      console.log(updatedData)
       const option = { upsert: true };
       const updatedDoc = {
         $set: {
-          classesImg: updatedClass.classesImg,
-          classesName: updatedClass.classesName,
-          instructor_name: updatedClass.instructor_name,
-          instructor_email: updatedClass.instructor_email,
-          seats: updatedClass.seats,
-          price: updatedClass.price,
-          details: updatedClass.details,
+          seats: updatedData.seats,
+          price: updatedData.price,
+          details: updatedData.details,
         }
       }
-      const result = await mangeCollection.updateOne(filter, updatedDoc, option)
+      const result = await mangeCollection .updateOne(filter, updatedDoc,option)
       res.send(result)
 
     })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // app.post('/carts', async (req, res) => {
-    //   const items = req.body
-    //   console.log(items)
-    //   const result = await cartsCollection.insertOne(items)
-    //   res.send(result)
-    // })
+    app.post('/carts', async (req, res) => {
+      const items = req.body
+      console.log(items)
+      const result = await cartsCollection.insertOne(items)
+      res.send(result)
+    })
 
 
     // jwt 
