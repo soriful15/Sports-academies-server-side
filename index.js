@@ -7,10 +7,12 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 app.use(cors());
 app.use(express.json());
+app.use(express.static("public"));
 
 // jwt
 const jwt = require('jsonwebtoken');
-
+// stripe
+const stripe = require("stripe")(process.env.Payment_Secret_Token)
 
 
 const verifyJwt = (req, res, next) => {
@@ -51,9 +53,9 @@ async function run() {
     await client.connect();
 
     const usersCollection = client.db('sportAcademies').collection('users')
-    const cartsCollection = client.db('sportAcademies').collection("carts")
     const mangeCollection = client.db('sportAcademies').collection("allClasses")
-
+    const cartsCollection = client.db('sportAcademies').collection("carts")
+    const paymentCollection = client.db("sportAcademies").collection("payments")
 
 
 
@@ -218,7 +220,7 @@ async function run() {
       res.send(result)
     })
 
-    app.patch('/updatedStatusFeedBack/:id', async (req, res) => {
+    app.put('/updatedStatusFeedBack/:id', async (req, res) => {
       const id = req.params.id;
       const { feedBack } = req.body;
       const filter = { _id: new ObjectId(id) }
@@ -253,8 +255,13 @@ async function run() {
     //   }
     // })
 
+    app.get('/allClasses/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await mangeCollection.findOne(query);
+      res.send(result)
+    })
 
-    //  Todo 
     app.put('/allClasses/:id', async (req, res) => {
       const id = req.params.id
       console.log(id)
@@ -279,17 +286,44 @@ async function run() {
       const result = await cartsCollection.insertOne(items)
       res.send(result)
     })
+    // TODO PORE DELETE KORTE HOBE
 
-    app.get('/carts', async (req, res) => {
+    // app.get('/carts', async (req, res) => {
+    //   const email = req.query.email
+    //   if (!email) {
+    //     res.send([])
+
+    //   }
+    //   const query = { email: email }
+    //   const result = await cartsCollection.find(query).toArray()
+    //   res.send(result)
+    // })
+
+    app.get('/carts', verifyJwt, async (req, res) => {
       const email = req.query.email
+      console.log(email)
       if (!email) {
         res.send([])
-
+      }
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res.status(401).send({ error: true, message: 'forbidden access' })
       }
       const query = { email: email }
       const result = await cartsCollection.find(query).toArray()
       res.send(result)
     })
+
+
+
+    app.get('/carts/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
+      const result = await cartsCollection.findOne(query);
+      res.send(result)
+    })
+
+
 
     app.delete('/carts/:id', async (req, res) => {
       const id = req.params.id
@@ -307,6 +341,45 @@ async function run() {
       const token = jwt.sign(user, process.env.JWT_TOKEN_SECRET, { expiresIn: '10h' });
       res.send({ token })
     })
+
+
+
+
+    // payment
+    app.post('/create-payment-intent', verifyJwt, async (req, res) => {
+      const { price } = req.body
+      const amount = parseInt(price * 100)
+      console.log(price, amount)
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card'],
+      })
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
+
+    })
+
+    // payment related api
+    app.post('/payments', verifyJwt, async (req, res) => {
+      const payment = req.body
+      const insertResult = await paymentCollection.insertOne(payment)
+
+      const query = { _id: { $in: payment.cartItems.map((id => new ObjectId(id))) } }
+      const deleteResult = await cartsCollection .deleteOne(query)
+
+      res.send({ insertResult, deleteResult })
+    })
+
+
+
+
+
+
+
+
+
 
 
 
