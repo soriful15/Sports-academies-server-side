@@ -286,19 +286,6 @@ async function run() {
       const result = await cartsCollection.insertOne(items)
       res.send(result)
     })
-    // TODO PORE DELETE KORTE HOBE
-
-    // app.get('/carts', async (req, res) => {
-    //   const email = req.query.email
-    //   if (!email) {
-    //     res.send([])
-
-    //   }
-    //   const query = { email: email }
-    //   const result = await cartsCollection.find(query).toArray()
-    //   res.send(result)
-    // })
-
     app.get('/carts', verifyJwt, async (req, res) => {
       const email = req.query.email
       console.log(email)
