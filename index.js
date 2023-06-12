@@ -393,8 +393,7 @@ async function run() {
     })
 
 
-    // app.get('/payments', verifyJwt, async (req, res) => {
-    app.get('/payments',  async (req, res) => {
+    app.get('/payments', verifyJwt, async (req, res) => {
       const { date } = req.body
       const result = await paymentCollection.find().sort({ date: -1 }).toArray();
       res.send(result)
