@@ -325,6 +325,8 @@ async function run() {
 
 
 
+
+
     app.delete('/carts/:id', async (req, res) => {
       const id = req.params.id
       const query = { _id: new ObjectId(id) }
@@ -365,7 +367,7 @@ async function run() {
     app.post('/payments', verifyJwt, async (req, res) => {
       const payment = req.body
       payment.date = new Date()
-      const id = payment.selectedItemId
+      const id = payment.selectedId
       const insertResult = await paymentCollection.insertOne(payment)
 
       const query = { _id: new ObjectId(id) }
@@ -382,8 +384,7 @@ async function run() {
       const filter = { _id: new ObjectId(id) }
       const updateDoc = {
         $set: {
-
-          seats:seats,
+          seats: seats,
           enroll: enroll
         }
       }
@@ -392,8 +393,45 @@ async function run() {
     })
 
 
+    // app.get('/payments', verifyJwt, async (req, res) => {
+    app.get('/payments',  async (req, res) => {
+      const { date } = req.body
+      const result = await paymentCollection.find().sort({ date: -1 }).toArray();
+      res.send(result)
+    })
+    // app.get('/payments', verifyJwt, async (req, res) => {
+    app.get('/allPayments',  async (req, res) => {
+      const { date } = req.body
+      const email = req.query.email;
+      const filter = { email: email }
+      const result = await paymentCollection.find(filter).sort({ date: -1 }).toArray();
+      res.send(result)
+    })
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // app.get('/instructorPayment', verifyJwt, async (req, res) => {
+    //   const {date} = req.body
+    //   const name=req.query.name;
+    //   const filter= { instructor_name:name }
+    //   const result = await paymentCollection.find(filter).sort({date: -1}).toArray();
+    //   res.send(result)
+    // })
 
 
 
