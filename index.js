@@ -364,15 +364,32 @@ async function run() {
     // payment related api
     app.post('/payments', verifyJwt, async (req, res) => {
       const payment = req.body
+      payment.date = new Date()
+      const id = payment.selectedItemId
       const insertResult = await paymentCollection.insertOne(payment)
 
-      const query = { _id: { $in: payment.cartItems.map((id => new ObjectId(id))) } }
-      const deleteResult = await cartsCollection .deleteOne(query)
+      const query = { _id: new ObjectId(id) }
+      const deleteResult = await cartsCollection.deleteOne(query)
 
       res.send({ insertResult, deleteResult })
     })
 
 
+
+    app.put('/updatedClass/:id', async (req, res) => {
+      const id = req.params.id
+      const { seats, enroll } = req.body
+      const filter = { _id: new ObjectId(id) }
+      const updateDoc = {
+        $set: {
+
+          seats:seats,
+          enroll: enroll
+        }
+      }
+      const result = await mangeCollection.updateOne(filter, updateDoc)
+      res.send(result)
+    })
 
 
 
