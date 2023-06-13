@@ -221,8 +221,7 @@ async function run() {
 
     app.get('/approvedClasses', async (req, res) => {
       const query = { status: 'approved' }
-      // const result = await mangeCollection.find(query).toArray();
-      const result = await mangeCollection.find(query).sort({enroll:-1}).toArray();
+      const result = await mangeCollection.find(query).toArray();
       res.send(result)
     })
 // Todo
