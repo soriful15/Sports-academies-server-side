@@ -8,7 +8,7 @@ require('dotenv').config()
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-
+// https://sports-academies-server-fawn.vercel.app
 // jwt
 const jwt = require('jsonwebtoken');
 // stripe
@@ -50,7 +50,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
     const usersCollection = client.db('sportAcademies').collection('users')
     const mangeCollection = client.db('sportAcademies').collection("allClasses")
@@ -99,28 +99,6 @@ async function run() {
       const result = await usersCollection.find().toArray();
       res.send(result)
     })
-
-
-
-    //   app.get('/users',  async (req, res) => {
-    //     const email = req.query.email
-    //     console.log(email)
-    //     if (!email) {
-    //         res.send([])
-    //     }
-    //     const decodedEmail = req.decoded.email;
-    //     if (email !== decodedEmail) {
-    //         return res.status(401).send({ error: true, message: 'forbidden access' })
-    //     }
-    //     const query = { email: email }
-    //     const result = await usersCollection.find(query).toArray()
-    //     res.send(result)
-    // })
-
-
-
-
-
     app.patch('/users/admin/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) }
@@ -164,6 +142,12 @@ async function run() {
 
     app.get('/instructorClasses', async (req, res) => {
       const query = { role: 'instructors' }
+      const result = await usersCollection.find(query).toArray();
+      res.send(result)
+    })
+// ToDo
+    app.get('/popularInstructorClasses', async (req, res) => {
+      const query = { role: 'instructors' }
       const result = await usersCollection.find(query).limit(6).toArray();
       res.send(result)
     })
@@ -191,7 +175,7 @@ async function run() {
       const result = await mangeCollection.insertOne(classesItem)
       res.send(result)
     })
-    app.get('/allClasses', async (req, res) => {
+    app.get('/allClasses',  async (req, res) => {
       const result = await mangeCollection.find().toArray();
       res.send(result)
     })
@@ -237,23 +221,20 @@ async function run() {
 
     app.get('/approvedClasses', async (req, res) => {
       const query = { status: 'approved' }
-      const result = await mangeCollection.find(query).toArray();
+      // const result = await mangeCollection.find(query).toArray();
+      const result = await mangeCollection.find(query).sort({enroll:-1}).toArray();
+      res.send(result)
+    })
+// Todo
+    app.get('/popularClasses', async (req, res) => {
+      const { enroll } = req.body
+      const query = { status: 'approved' }
+      const result = await mangeCollection.find(query).sort({enroll:-1}).limit(6).toArray();
       res.send(result)
     })
 
 
-    // app.get('/classByInstructorEmail', async (req, res) => {
-    //   const email = req.query.email
-    //   const query = { instructor_email: email }
-    //   try {
-    //     const result = await mangeCollection.find(query).toArray()
-    //     res.send(result)
-    //   }
-    //   catch(error){
-    //     console.error(error)
-    //     return res.status(500).json({error:'As error accord while fetching classes by Instructor email'})
-    //   }
-    // })
+   
 
     app.get('/allClasses/:id', async (req, res) => {
       const id = req.params.id
@@ -380,7 +361,7 @@ async function run() {
     })
 
 
-    app.get('/payments', verifyJwt, async (req, res) => {
+    app.get('/enrollPayments', verifyJwt, async (req, res) => {
       const { date } = req.body
       const result = await paymentCollection.find().sort({ date: -1 }).toArray();
       res.send(result)
@@ -393,39 +374,6 @@ async function run() {
       const result = await paymentCollection.find(filter).sort({ date: -1 }).toArray();
       res.send(result)
     })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // app.get('/instructorPayment', verifyJwt, async (req, res) => {
-    //   const {date} = req.body
-    //   const name=req.query.name;
-    //   const filter= { instructor_name:name }
-    //   const result = await paymentCollection.find(filter).sort({date: -1}).toArray();
-    //   res.send(result)
-    // })
-
-
-
-
-
-
-
-
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -435,20 +383,6 @@ async function run() {
   }
 }
 run().catch(console.dir);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
