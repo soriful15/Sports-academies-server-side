@@ -145,7 +145,7 @@ async function run() {
       const result = await usersCollection.find(query).toArray();
       res.send(result)
     })
-// ToDo
+
     app.get('/popularInstructorClasses', async (req, res) => {
       const query = { role: 'instructors' }
       const result = await usersCollection.find(query).limit(6).toArray();
@@ -224,7 +224,7 @@ async function run() {
       const result = await mangeCollection.find(query).toArray();
       res.send(result)
     })
-// Todo
+
     app.get('/popularClasses', async (req, res) => {
       const { enroll } = req.body
       const query = { status: 'approved' }
