@@ -8,7 +8,6 @@ require('dotenv').config()
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
-// https://sports-academies-server-fawn.vercel.app
 // jwt
 const jwt = require('jsonwebtoken');
 // stripe
